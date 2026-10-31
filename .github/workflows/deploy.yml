@@ -12,9 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup SSH
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
@@ -29,11 +30,33 @@ jobs:
 
       - name: Upload dynamic.yml
         run: |
-          scp -i ~/.ssh/id_ed25519 dynamic.yml \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/
+          scp -i ~/.ssh/id_ed25519 \
+          dynamic.yml \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/dynamic.yml
+
+      - name: Verify container
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "docker ps -a"
 
       - name: Restart Traefik
         run: |
           ssh -i ~/.ssh/id_ed25519 \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+
+          if docker ps -a --format '{{.Names}}' | grep -q '^proxy$'; then
+              docker restart proxy
+          else
+              echo "Container proxy introuvable"
+              docker ps -a
+              exit 1
+          fi
+
+          EOF
+
+      - name: Show logs
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
           ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "docker restart proxy"
+          "docker logs --tail 50 proxy"
