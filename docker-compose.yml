@@ -1,6 +1,6 @@
 services:
 
-  traefik:
+  proxy:
     image: traefik:v3.5
     container_name: traefik
 
