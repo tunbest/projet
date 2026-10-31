@@ -1,13 +1,13 @@
 services:
-
   proxy:
     image: traefik:v3.5
-    container_name: traefik
+    container_name: proxy
 
     restart: unless-stopped
 
     command:
       - --api.dashboard=true
+
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=shared_network
@@ -15,7 +15,7 @@ services:
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
 
-      - --certificatesresolvers.letsencrypt.acme.email=${EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.email=admin@tfsn.dev
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
 
@@ -25,24 +25,14 @@ services:
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/acme.json:/letsencrypt/acme.json
-
-    networks:
-      - shared_network
-
-  app:
-    image: nginx:alpine
-    container_name: demo-app
-
-    restart: unless-stopped
+      - ./acme.json:/letsencrypt/acme.json
 
     labels:
       - traefik.enable=true
-      - traefik.http.routers.demo.rule=Host(`${DOMAIN}`)
-      - traefik.http.routers.demo.entrypoints=websecure
-      - traefik.http.routers.demo.tls=true
-      - traefik.http.routers.demo.tls.certresolver=letsencrypt
-      - traefik.http.services.demo.loadbalancer.server.port=80
+      - traefik.http.routers.dashboard.rule=Host(`traefik.tfsn.dev`)
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.tls=true
+      - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
 
     networks:
       - shared_network
