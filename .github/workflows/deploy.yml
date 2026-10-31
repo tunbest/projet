@@ -35,15 +35,8 @@ jobs:
           git fetch origin
           git reset --hard origin/main
 
-          docker compose down || true
           docker compose up -d
 
           docker ps
-
-          EOF
-          git pull origin main
-
-          docker compose pull || true
-          docker compose up -d
 
           EOF
