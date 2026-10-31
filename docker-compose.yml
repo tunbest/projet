@@ -1,0 +1,52 @@
+services:
+
+  traefik:
+    image: traefik:v3.5
+    container_name: traefik
+
+    restart: unless-stopped
+
+    command:
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=shared_network
+
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+
+      - --certificatesresolvers.letsencrypt.acme.email=${EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/letsencrypt/acme.json
+
+    networks:
+      - shared_network
+
+  app:
+    image: nginx:alpine
+    container_name: demo-app
+
+    restart: unless-stopped
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.demo.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.demo.entrypoints=websecure
+      - traefik.http.routers.demo.tls=true
+      - traefik.http.routers.demo.tls.certresolver=letsencrypt
+      - traefik.http.services.demo.loadbalancer.server.port=80
+
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external: true
