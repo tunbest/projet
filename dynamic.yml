@@ -1,29 +1,13 @@
 http:
   routers:
-    frigo:
-      rule: "Host(`frigo.tfsn.dev`)"
-      service: frigo
-
-    api:
-      rule: "Host(`api.tfsn.dev`)"
-      service: api
-
     portainer:
       rule: "Host(`portainer.tfsn.dev`)"
       service: portainer
+      entryPoints:
+        - web
 
   services:
-    frigo:
-      loadBalancer:
-        servers:
-          - url: "http://85.215.215.242:3000"
-
-    api:
-      loadBalancer:
-        servers:
-          - url: "http://hoster:8080"
-
     portainer:
       loadBalancer:
         servers:
-          - url: "http://85.215.215.242:9443"
+          - url: "http://portainer:9000"
