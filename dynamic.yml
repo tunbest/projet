@@ -10,4 +10,4 @@ http:
     portainer:
       loadBalancer:
         servers:
-          - url: "http://portainer:9443"
+          - url: "https://85.215.215.242:9443"
