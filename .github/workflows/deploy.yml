@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup SSH
         run: |
@@ -22,20 +21,19 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Create folder
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "mkdir -p /srv/traefik"
+
       - name: Upload dynamic.yml
         run: |
-          scp -i ~/.ssh/id_ed25519 \
-            dynamic.yml \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/dynamic.yml
+          scp -i ~/.ssh/id_ed25519 dynamic.yml \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/
 
       - name: Restart Traefik
         run: |
           ssh -i ~/.ssh/id_ed25519 \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "docker restart proxy"
-
-      - name: Verify
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "docker ps | grep proxy"
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "docker restart proxy"
