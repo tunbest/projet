@@ -1,0 +1,29 @@
+http:
+  routers:
+    frigo:
+      rule: "Host(`frigo.tfsn.dev`)"
+      service: frigo
+
+    api:
+      rule: "Host(`api.tfsn.dev`)"
+      service: api
+
+    portainer:
+      rule: "Host(`portainer.tfsn.dev`)"
+      service: portainer
+
+  services:
+    frigo:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+
+    api:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8080"
+
+    portainer:
+      loadBalancer:
+        servers:
+          - url: "http://85.215.215.242:9443"
