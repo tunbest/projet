@@ -1,20 +1,40 @@
 http:
   routers:
+
     portainer:
       rule: "Host(`portainer.tfsn.dev`)"
       service: portainer
-      entryPoints:
-        - web
-    clarity:
+
+    odoo:
+      rule: "Host(`odoo.tfsn.dev`)"
+      service: odoo
+
+    ssh:
+      rule: "Host(`ssh.tfsn.dev`)"
+      service: ssh
+
+    prometric:
       rule: "Host(`clarity.tfsn.dev`)"
-      service: clarity
+      service: prometric
 
   services:
+
     portainer:
       loadBalancer:
         servers:
           - url: "https://85.215.215.242:9443"
-    clarity:
+
+    odoo:
+      loadBalancer:
+        servers:
+          - url: "http://85.215.215.242:8069"
+
+    prometric:
       loadBalancer:
         servers:
           - url: "http://85.215.215.242:3000"
+
+    ssh:
+      loadBalancer:
+        servers:
+          - url: "http://85.215.215.242:8071"
