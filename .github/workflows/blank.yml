@@ -1,10 +1,10 @@
-name: Create PostgreSQL 16 Container
+name: Create Nginx Container
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy-postgres:
+  nginx:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,24 +15,16 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Create PostgreSQL container
+      - name: Deploy Nginx
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-
-          docker rm -f postgres16 || true
-
-          docker volume create postgres16_data || true
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
+          
+          docker rm -f nginx600 || true
 
           docker run -d \
-            --name postgres16 \
+            --name nginx600 \
             --restart unless-stopped \
-            -p 5432:5432 \
-            -e POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
-            -e POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
-            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            -v postgres16_data:/var/lib/postgresql/data \
-            postgres:16
+            -p 600:80 \
+            nginx:latest
 
           docker ps
-
-          EOF
