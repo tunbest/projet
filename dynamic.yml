@@ -1,6 +1,10 @@
 http:
   routers:
-
+    jenkins:
+      rule: "Host(`jenkins.tfsn.dev`)"
+      service: portainer
+      tls:
+        certResolver: letsencrypt
     portainer:
       rule: "Host(`portainer.tfsn.dev`)"
       service: portainer
@@ -26,7 +30,10 @@ http:
         certResolver: letsencrypt
 
   services:
-
+    jenkins:
+      loadBalancer:
+        servers:
+          - url: "https://85.215.215.242:50000"
     portainer:
       loadBalancer:
         servers:
