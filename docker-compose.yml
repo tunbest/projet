@@ -1,38 +1,23 @@
 services:
   proxy:
-    image: traefik:v3.5
+    image: traefik:v3.7
     container_name: proxy
-
     restart: unless-stopped
 
     command:
       - --api.dashboard=true
-
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=shared_network
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --providers.file.watch=true
 
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-
-      - --certificatesresolvers.letsencrypt.acme.email=admin@tfsn.dev
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
 
     ports:
       - "80:80"
       - "443:443"
 
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./acme.json:/letsencrypt/acme.json
-
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`traefik.tfsn.dev`)
-      - traefik.http.routers.dashboard.service=api@internal
-      - traefik.http.routers.dashboard.tls=true
-      - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
+      - ./dynamic.yml:/etc/traefik/dynamic.yml:ro
 
     networks:
       - shared_network
