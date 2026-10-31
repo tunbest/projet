@@ -33,7 +33,7 @@ http:
     jenkins:
       loadBalancer:
         servers:
-          - url: "https://85.215.215.242:50000"
+          - url: "https://85.215.215.242:8080"
     portainer:
       loadBalancer:
         servers:
