@@ -5,7 +5,7 @@ on:
 
   push:
     paths:
-      - "dynamic.yml"
+      - dynamic.yml
 
 jobs:
   deploy:
@@ -15,48 +15,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure SSH
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Create folder
+      - name: Create directory
         run: |
           ssh -i ~/.ssh/id_ed25519 \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "mkdir -p /srv/traefik"
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "mkdir -p /srv/traefik"
 
       - name: Upload dynamic.yml
         run: |
           scp -i ~/.ssh/id_ed25519 \
-          dynamic.yml \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/dynamic.yml
+            dynamic.yml \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/dynamic.yml
 
-      - name: Verify container
+      - name: Reload Traefik
         run: |
           ssh -i ~/.ssh/id_ed25519 \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "docker ps -a"
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
 
-      - name: Restart Traefik
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          CONTAINER=$(docker ps --format '{{.Names}} {{.Image}}' | grep traefik | awk '{print $1}' | head -1)
 
-          if docker ps -a --format '{{.Names}}' | grep -q '^proxy$'; then
-              docker restart proxy
-          else
-              echo "Container proxy introuvable"
-              docker ps -a
-              exit 1
+          if [ -z "$CONTAINER" ]; then
+            echo "Aucun conteneur Traefik trouvé"
+            docker ps
+            exit 1
           fi
 
-          EOF
+          echo "Traefik trouvé : $CONTAINER"
 
-      - name: Show logs
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "docker logs --tail 50 proxy"
+          docker restart "$CONTAINER"
+
+          docker logs --tail 20 "$CONTAINER"
+
+          EOF
