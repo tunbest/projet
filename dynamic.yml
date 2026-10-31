@@ -21,7 +21,7 @@ http:
     api:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:8080"
+          - url: "http://host.docker:8080"
 
     portainer:
       loadBalancer:
