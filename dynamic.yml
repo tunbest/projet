@@ -5,9 +5,16 @@ http:
       service: portainer
       entryPoints:
         - web
+    clarity:
+      rule: "Host(`clarity.tfsn.dev`)"
+      service: clarity
 
   services:
     portainer:
       loadBalancer:
         servers:
           - url: "https://85.215.215.242:9443"
+    clarity:
+      loadBalancer:
+        servers:
+          - url: "http://85.215.215.242:3000"
