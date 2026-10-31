@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  nginx:
+  create-nginx:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,18 +13,18 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy Nginx
+      - name: Deploy Nginx Container
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} '
-          
-          docker rm -f nginx600 || true
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" <<EOF
+            docker rm -f nginx600 || true
 
-          docker run -d \
-            --name nginx600 \
-            --restart unless-stopped \
-            -p 600:80 \
-            nginx:latest
+            docker run -d \
+              --name nginx600 \
+              --restart unless-stopped \
+              -p 600:80 \
+              nginx:latest
 
-          docker ps
+            docker ps
+          EOF
