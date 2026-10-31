@@ -1,0 +1,42 @@
+# .github/workflows/postgres-backup.yml
+
+name: PostgreSQL Backup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create backup on VPS
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+
+            BACKUP_DIR=/opt/backups/postgres
+            DATE=$(date +%Y%m%d_%H%M%S)
+
+            mkdir -p $BACKUP_DIR
+
+            export PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+
+            pg_dump \
+              -h localhost \
+              -U ${{ secrets.POSTGRES_USER }} \
+              -d ${{ secrets.POSTGRES_DB }} \
+              -F c \
+              -f $BACKUP_DIR/postgres_$DATE.dump
+
+            find $BACKUP_DIR -type f -mtime +7 -delete
+
+            ls -lh $BACKUP_DIR
+
+          EOFEOF
