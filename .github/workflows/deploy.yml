@@ -1,6 +1,8 @@
-name: Deploy Docker
+name: Deploy Traefik
 
 on:
+  workflow_dispatch:
+
   push:
     paths:
       - "dynamic.yml"
@@ -10,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -17,26 +22,20 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy
+      - name: Upload dynamic.yml
+        run: |
+          scp -i ~/.ssh/id_ed25519 \
+            dynamic.yml \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/traefik/dynamic.yml
+
+      - name: Restart Traefik
         run: |
           ssh -i ~/.ssh/id_ed25519 \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "docker restart proxy"
 
-          set -e
-
-          mkdir -p /srv
-
-          if [ ! -d /srv/projet/.git ]; then
-            git clone git@github.com:tunbest/projet.git /srv/projet
-          fi
-
-          cd /srv/projet
-
-          git fetch origin
-          git reset --hard origin/main
-
-          docker compose up -d
-
-          docker ps
-
-          EOF
+      - name: Verify
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "docker ps | grep proxy"
