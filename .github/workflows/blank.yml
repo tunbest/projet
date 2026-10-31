@@ -1,10 +1,10 @@
-name: PostgreSQL16
+name: Create PostgreSQL 16 Container
 
 on:
   workflow_dispatch:
 
 jobs:
-  backup:
+  deploy-postgres:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,35 +15,24 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Create backup on VPS
+      - name: Create PostgreSQL container
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
 
-          mkdir -p /tmp/github-backup
+          docker rm -f postgres16 || true
 
-          docker exec ${{ secrets.POSTGRES_CONTAINER }} \
-            pg_dump \
-            -U ${{ secrets.POSTGRES_USER }} \
-            -d ${{ secrets.POSTGRES_DB }} \
-            -Fc \
-            -f /tmp/backup.dump
+          docker volume create postgres16_data || true
 
-          docker cp \
-            ${{ secrets.POSTGRES_CONTAINER }}:/tmp/backup.dump \
-            /tmp/github-backup/backup.dump
+          docker run -d \
+            --name postgres16 \
+            --restart unless-stopped \
+            -p 5432:5432 \
+            -e POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            -e POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -v postgres16_data:/var/lib/postgresql/data \
+            postgres:16
+
+          docker ps
 
           EOF
-
-      - name: Download backup
-        run: |
-          mkdir -p backup
-
-          scp \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/github-backup/backup.dump \
-            backup/postgres_$(date +%Y%m%d_%H%M%S).dump
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: postgres-backup
-          path: backup/*.dump
