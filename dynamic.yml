@@ -4,18 +4,26 @@ http:
     portainer:
       rule: "Host(`portainer.tfsn.dev`)"
       service: portainer
+      tls:
+        certResolver: letsencrypt
 
     odoo:
       rule: "Host(`odoo.tfsn.dev`)"
       service: odoo
+      tls:
+        certResolver: letsencrypt
 
     ssh:
       rule: "Host(`ssh.tfsn.dev`)"
       service: ssh
+      tls:
+        certResolver: letsencrypt
 
     prometric:
       rule: "Host(`clarity.tfsn.dev`)"
       service: prometric
+      tls:
+        certResolver: letsencrypt
 
   services:
 
