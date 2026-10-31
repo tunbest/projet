@@ -30,24 +30,21 @@ jobs:
 
           set -e
 
-          mkdir -p /srv/projet
-
           cd /srv/projet
-
-          if [ ! -d .git ]; then
-            git clone git@github.com:tunbest/projet.git .
-          fi
 
           git fetch origin
           git reset --hard origin/main
 
           docker rm -f proxy || true
+          docker rm -f projet-proxy-1 || true
+          docker rm -f traefik || true
 
           docker build -t traefik-custom .
 
           docker run -d \
             --name proxy \
             --restart unless-stopped \
+            --network shared_network \
             -p 80:80 \
             -p 443:443 \
             traefik-custom
