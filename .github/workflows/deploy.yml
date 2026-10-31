@@ -1,7 +1,9 @@
 name: Deploy Docker
 
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - "dynamic.yml"
 
 jobs:
   deploy:
