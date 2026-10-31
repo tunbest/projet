@@ -2,7 +2,7 @@ http:
   routers:
     jenkins:
       rule: "Host(`jenkins.tfsn.dev`)"
-      service: portainer
+      service: jenkins
       tls:
         certResolver: letsencrypt
     portainer:
