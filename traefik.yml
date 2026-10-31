@@ -10,6 +10,14 @@ providers:
     directory: "/etc/traefik/dynamic"
     watch: true
 
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@tfsn.dev
+      storage: /etc/traefik/acme.json
+      httpChallenge:
+        entryPoint: web
+
 serversTransport:
   insecureSkipVerify: true
 
