@@ -1,6 +1,4 @@
-# .github/workflows/postgres-backup.yml
-
-name: PostgreSQL Backup
+name: PostgreSQL16
 
 on:
   workflow_dispatch:
@@ -19,24 +17,33 @@ jobs:
 
       - name: Create backup on VPS
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
 
-            BACKUP_DIR=/opt/backups/postgres
-            DATE=$(date +%Y%m%d_%H%M%S)
+          mkdir -p /tmp/github-backup
 
-            mkdir -p $BACKUP_DIR
-
-            export PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
-
+          docker exec ${{ secrets.POSTGRES_CONTAINER }} \
             pg_dump \
-              -h localhost \
-              -U ${{ secrets.POSTGRES_USER }} \
-              -d ${{ secrets.POSTGRES_DB }} \
-              -F c \
-              -f $BACKUP_DIR/postgres_$DATE.dump
+            -U ${{ secrets.POSTGRES_USER }} \
+            -d ${{ secrets.POSTGRES_DB }} \
+            -Fc \
+            -f /tmp/backup.dump
 
-            find $BACKUP_DIR -type f -mtime +7 -delete
+          docker cp \
+            ${{ secrets.POSTGRES_CONTAINER }}:/tmp/backup.dump \
+            /tmp/github-backup/backup.dump
 
-            ls -lh $BACKUP_DIR
+          EOF
 
-          EOFEOF
+      - name: Download backup
+        run: |
+          mkdir -p backup
+
+          scp \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/github-backup/backup.dump \
+            backup/postgres_$(date +%Y%m%d_%H%M%S).dump
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-backup
+          path: backup/*.dump
