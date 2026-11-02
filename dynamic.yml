@@ -10,7 +10,11 @@ http:
       service: portainer
       tls:
         certResolver: letsencrypt
-
+   docker:
+      rule: "Host(`docker.fg.ip-ddns.com`)"
+      service: docker
+      tls:
+        certResolver: letsencrypt
     odoo:
       rule: "Host(`odoo.tfsn.dev`)"
       service: odoo
@@ -38,7 +42,10 @@ http:
       loadBalancer:
         servers:
           - url: "https://85.215.215.242:9443"
-
+   docker:
+      loadBalancer:
+        servers:
+          - url: "https://85.215.215.242:9443"
     odoo:
       loadBalancer:
         servers:
