@@ -23,7 +23,7 @@ http:
         certResolver: letsencrypt
 
     odoo:
-      rule: "Host(`odoo.tfsn.dev`)"
+      rule: "Host(`clarity.fg.ip-ddns.com`)"
       service: odoo
       tls:
         certResolver: letsencrypt
@@ -61,7 +61,7 @@ http:
     odoo:
       loadBalancer:
         servers:
-          - url: "http://85.215.215.242:8069"
+          - url: "http://85.215.215.242:3000"
 
     ssh:
       loadBalancer:
