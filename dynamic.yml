@@ -29,7 +29,7 @@ http:
         certResolver: letsencrypt
 
     ssh:
-      rule: "Host(`ssh.tfsn.dev`)"
+      rule: "Host(`ssh.fg.ip-ddns.com`)"
       service: ssh
       tls:
         certResolver: letsencrypt
