@@ -5,7 +5,7 @@ http:
 
   routers:
     clarity:
-      rule: "Host(`clarity.fg.ip-ddns.com`)"
+      rule: "Host(`clarity.tfsn.dev`)"
       service: clarity
       tls:
         certResolver: letsencrypt
