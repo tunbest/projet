@@ -20,7 +20,7 @@ http:
     clarity:
       loadBalancer:
         servers:
-          - url: "http://85.215.215.242:8069"
+          - url: "http://85.215.215.242:3000"
 
     pm:
       loadBalancer:
