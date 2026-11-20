@@ -4,71 +4,25 @@ http:
       insecureSkipVerify: true
 
   routers:
-    jenkins:
-      rule: "Host(`jenkins.tfsn.dev`)"
-      service: jenkins
-      tls:
-        certResolver: letsencrypt
-
-    portainer:
-      rule: "Host(`portainer.tfsn.dev`)"
-      service: portainer
-      tls:
-        certResolver: letsencrypt
-
-    docker:
-      rule: "Host(`docker.fg.ip-ddns.com`)"
-      service: docker
-      tls:
-        certResolver: letsencrypt
-
-    odoo:
-      rule: "Host(`clarity.fg.ip-ddns.com`)"
-      service: odoo
-      tls:
-        certResolver: letsencrypt
-
-    ssh:
-      rule: "Host(`ssh.fg.ip-ddns.com`)"
-      service: ssh
-      tls:
-        certResolver: letsencrypt
-
     clarity:
-      rule: "Host(`clarity.tfsn.dev`)"
+      rule: "Host(`clarity.fg.ip-ddns.com`)"
       service: clarity
       tls:
         certResolver: letsencrypt
 
+    pm:
+      rule: "Host(`pm.tfsn.dev`)"
+      service: pm
+      tls:
+        certResolver: letsencrypt
+
   services:
-    jenkins:
-      loadBalancer:
-        servers:
-          - url: "http://85.215.215.242:8082"
-
-    portainer:
-      loadBalancer:
-        serversTransport: insecureTransport
-        servers:
-          - url: "https://85.215.215.242:9443"
-
-    docker:
-      loadBalancer:
-        serversTransport: insecureTransport
-        servers:
-          - url: "https://85.215.215.242:9443"
-
-    odoo:
-      loadBalancer:
-        servers:
-          - url: "http://85.215.215.242:3000"
-
-    ssh:
-      loadBalancer:
-        servers:
-          - url: "http://85.215.215.242:8071"
-
     clarity:
+      loadBalancer:
+        servers:
+          - url: "http://85.215.215.242:8069"
+
+    pm:
       loadBalancer:
         servers:
           - url: "http://85.215.215.242:3000"
